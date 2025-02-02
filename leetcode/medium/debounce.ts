@@ -18,7 +18,7 @@
  * @return {Function}
  */
 
-var debounce = function (fn: Function, t: number): Function {
+var debounce = function <T>(fn: (...args: Array<T>) => unknown, t: number): (...args: Array<T>) => void {
   let timeout: ReturnType<typeof setTimeout>;
   return function (...args: any[]) {
     clearTimeout(timeout);

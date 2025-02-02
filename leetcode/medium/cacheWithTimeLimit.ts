@@ -8,14 +8,8 @@
 
 // count(): returns the count of un-expired keys.
 
-interface TimeLimitedCache {
-  set(key: number, value: number, duration: number): number;
-  get(key: number): number;
-  count(): number;
-}
-
-function TimeLimitedCache(this: TimeLimitedCache) {
-  const cache: Record<number, { value: number; expiresAt: number }> = {};
+class TimeLimitedCache {
+  private cache: Record<number, { value: number; expiresAt: number }> = {};
 
   /**
    * @param {number} key
@@ -23,36 +17,34 @@ function TimeLimitedCache(this: TimeLimitedCache) {
    * @param {number} duration time until expiration in ms
    * @return {boolean} if un-expired key already existed
    */
-  TimeLimitedCache.prototype.set = function (key: number, value: number, duration: number) {
+  set(key: number, value: number, duration: number): boolean {
     const currentTime = new Date().getTime();
     let oldNotExpired = false;
-    if (cache[key] && cache[key].expiresAt > currentTime) oldNotExpired = true;
-    cache[key] = { value, expiresAt: currentTime + duration };
+    if (this.cache[key] && this.cache[key].expiresAt > currentTime) oldNotExpired = true;
+    this.cache[key] = { value, expiresAt: currentTime + duration };
     return oldNotExpired;
-  };
+  }
 
   /**
    * @param {number} key
    * @return {number} value associated with key
    */
-  TimeLimitedCache.prototype.get = function (key: number) {
+  get(key: number): number {
     const currentTime = new Date().getTime();
-    if (cache[key] && cache[key].expiresAt > currentTime) return cache[key].value;
+    if (this.cache[key] && this.cache[key].expiresAt > currentTime) return this.cache[key].value;
     return -1;
-  };
+  }
 
   /**
    * @return {number} count of non-expired keys
    */
-  TimeLimitedCache.prototype.count = function () {
-    return Object.entries(cache).reduce((acc, [key, value]) => {
+  count(): number {
+    return Object.entries(this.cache).reduce<number>((acc, [key, value]) => {
       if (value.expiresAt > new Date().getTime()) acc += 1;
       return acc;
     }, 0);
-  };
+  }
 }
-
-const timeLimitedCache = new TimeLimitedCache();
 /**
  * const timeLimitedCache = new TimeLimitedCache()
  * timeLimitedCache.set(1, 42, 1000); // false
